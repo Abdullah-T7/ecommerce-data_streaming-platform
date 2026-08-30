@@ -10,8 +10,7 @@ env/
 .env.*
 
 # IDE
-.vscode/*
-!.vscode/settings.json
+.vscode/
 
 # Logs
 *.log
