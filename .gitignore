@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+.env.*
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+
+# Logs
+*.log
+
+# Spark
+spark-warehouse/
+metastore_db/
+
+# PostgreSQL
+postgres/data/
+*.sql.bak
+
+# OS
+.DS_Store
+Thumbs.db
