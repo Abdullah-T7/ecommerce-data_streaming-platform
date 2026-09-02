@@ -106,6 +106,7 @@ services:
     volumes:
       - minio-data:/data
 
+
   spark:
     build:
       context: ./spark
@@ -113,12 +114,27 @@ services:
     image: ecommerce-spark:1.0
     container_name: ecommerce-spark
     restart: unless-stopped
+    command: /opt/spark/sbin/start-master.sh
     ports:
       - "8080:8080"
       - "7077:7077"
     volumes:
       - ./spark:/opt/spark-apps
 
+
+  producer:
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+    image: ecommerce-producer:1.0
+    container_name: ecommerce-producer
+    restart: unless-stopped
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
 
 
 

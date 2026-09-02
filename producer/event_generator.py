@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import time
 import uuid
@@ -9,7 +10,12 @@ from kafka import KafkaProducer
 
 faker = Faker()
 
-KAFKA_BOOTSTRAP_SERVERS = "localhost:29092"
+
+
+KAFKA_BOOTSTRAP_SERVERS = os.getenv(
+    "KAFKA_BOOTSTRAP_SERVERS",
+    "localhost:29092"
+)
 TOPIC = "orders"
 
 producer = KafkaProducer(
