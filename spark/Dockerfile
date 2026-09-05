@@ -11,4 +11,6 @@ ADD https://repo1.maven.org/maven2/org/apache/commons/commons-pool2/2.11.1/commo
 
 ADD https://jdbc.postgresql.org/download/postgresql-42.7.8.jar /opt/spark/jars/postgresql.jar
 
+RUN chmod 644 /opt/spark/jars/*.jar
+
 USER 185

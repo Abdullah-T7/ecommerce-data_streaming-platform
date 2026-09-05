@@ -43,7 +43,7 @@ spark.sparkContext.setLogLevel("WARN")
 order_schema = StructType([
     StructField("event_id", StringType(), False),
     StructField("event_type", StringType(), False),
-    StructField("event_time", StringType(), False),
+    StructField("event_time", TimestampType(), False),
     StructField("order_id", StringType(), False),
     StructField("customer_id", StringType(), False),
     StructField("customer_name", StringType(), True),
