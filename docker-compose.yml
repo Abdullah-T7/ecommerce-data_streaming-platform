@@ -114,10 +114,22 @@ services:
     image: ecommerce-spark:1.0
     container_name: ecommerce-spark
     restart: unless-stopped
-    command: /opt/spark/sbin/start-master.sh
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.master.Master
     ports:
       - "8080:8080"
       - "7077:7077"
+    volumes:
+      - ./spark:/opt/spark-apps
+
+  spark-worker:
+    image: ecommerce-spark:1.0
+    container_name: ecommerce-spark-worker
+    restart: unless-stopped
+    command: /opt/spark/bin/spark-class org.apache.spark.deploy.worker.Worker spark://spark:7077
+    depends_on:
+      - spark
+    ports:
+      - "8081:8081"
     volumes:
       - ./spark:/opt/spark-apps
 
