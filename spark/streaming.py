@@ -1,3 +1,4 @@
+import os
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, from_json
 from pyspark.sql.types import (
@@ -17,10 +18,12 @@ from pyspark.sql.types import (
 KAFKA_BOOTSTRAP_SERVERS = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
 KAFKA_TOPIC = "orders"
 
-POSTGRES_URL = "jdbc:postgresql://postgres:5432/ecommerce"
-POSTGRES_TABLE = "orders"
-POSTGRES_USER = "ecommerce"
-POSTGRES_PASSWORD = "ecommerce"
+
+
+POSTGRES_URL = os.getenv("POSTGRES_URL")
+POSTGRES_TABLE = os.getenv("POSTGRES_TABLE", "orders")
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")  
 
 
 # ---------------------------------------------------------
