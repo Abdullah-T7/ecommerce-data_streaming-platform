@@ -108,6 +108,8 @@ services:
 
 
   spark:
+    env_file:
+      - .env
     build:
       context: ./spark
       dockerfile: Dockerfile
