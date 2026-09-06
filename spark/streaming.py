@@ -16,7 +16,7 @@ from pyspark.sql.types import (
 # ---------------------------------------------------------
 
 KAFKA_BOOTSTRAP_SERVERS = "kafka-1:9092,kafka-2:9092,kafka-3:9092"
-KAFKA_TOPIC = "orders"
+KAFKA_TOPICS = "orders,payments,shipments"
 
 
 
@@ -43,17 +43,22 @@ spark.sparkContext.setLogLevel("WARN")
 # Kafka event schema
 # ---------------------------------------------------------
 
-order_schema = StructType([
-    StructField("event_id", StringType(), False),
-    StructField("event_type", StringType(), False),
-    StructField("event_time", TimestampType(), False),
-    StructField("order_id", StringType(), False),
-    StructField("customer_id", StringType(), False),
+event_schema = StructType([
+    StructField("event_id", StringType(), True),
+    StructField("event_type", StringType(), True),
+    StructField("event_time", TimestampType(), True),
+    StructField("order_id", StringType(), True),
+    StructField("customer_id", StringType(), True),
     StructField("customer_name", StringType(), True),
     StructField("product", StringType(), True),
     StructField("quantity", IntegerType(), True),
     StructField("amount", DoubleType(), True),
     StructField("country", StringType(), True),
+    StructField("payment_method", StringType(), True),
+    StructField("payment_status", StringType(), True),
+    StructField("carrier", StringType(), True),
+    StructField("tracking_number", StringType(), True),
+    StructField("shipment_status", StringType(), True),
 ])
 
 
@@ -65,7 +70,7 @@ kafka_df = (
     spark.readStream
     .format("kafka")
     .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP_SERVERS)
-    .option("subscribe", KAFKA_TOPIC)
+    .option("subscribe", KAFKA_TOPICS)
     .option("startingOffsets", "earliest")
     .option("failOnDataLoss", "false")
     .load()
@@ -76,13 +81,14 @@ kafka_df = (
 # Convert Kafka JSON into structured columns
 # ---------------------------------------------------------
 
-orders_df = (
+events_df = (
     kafka_df
-    .selectExpr("CAST(value AS STRING) AS json_value")
+    .selectExpr("topic", "CAST(value AS STRING) AS json_value")
     .select(
-        from_json(col("json_value"), order_schema).alias("order")
+        col("topic"),
+        from_json(col("json_value"), event_schema).alias("event"),
     )
-    .select("order.*")
+    .select("topic", "event.*")
 )
 
 
@@ -117,10 +123,10 @@ def write_to_postgres(batch_df, batch_id):
 # ---------------------------------------------------------
 
 query = (
-    orders_df.writeStream
+    events_df.writeStream
     .foreachBatch(write_to_postgres)
     .outputMode("append")
-    .option("checkpointLocation", "/tmp/ecommerce-orders-checkpoint")
+    .option("checkpointLocation", "/tmp/ecommerce-events-checkpoint")
     .start()
 )
 
