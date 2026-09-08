@@ -21,7 +21,6 @@ KAFKA_TOPICS = "orders,payments,shipments"
 
 
 POSTGRES_URL = os.getenv("POSTGRES_URL")
-POSTGRES_TABLE = os.getenv("POSTGRES_TABLE", "orders")
 POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")  
 
@@ -101,19 +100,64 @@ def write_to_postgres(batch_df, batch_id):
     if batch_df.isEmpty():
         return
 
-    (
-        batch_df
-        .dropDuplicates(["event_id"])
-        .write
-        .format("jdbc")
-        .option("url", POSTGRES_URL)
-        .option("dbtable", POSTGRES_TABLE)
-        .option("user", POSTGRES_USER)
-        .option("password", POSTGRES_PASSWORD)
-        .option("driver", "org.postgresql.Driver")
-        .mode("append")
-        .save()
-    )
+    table_columns = {
+        "orders": [
+            "event_id",
+            "event_type",
+            "event_time",
+            "order_id",
+            "customer_id",
+            "customer_name",
+            "product",
+            "quantity",
+            "amount",
+            "country",
+        ],
+        "payments": [
+            "event_id",
+            "event_type",
+            "event_time",
+            "order_id",
+            "customer_id",
+            "amount",
+            "payment_method",
+            "payment_status",
+        ],
+        "shipments": [
+            "event_id",
+            "event_type",
+            "event_time",
+            "order_id",
+            "customer_id",
+            "carrier",
+            "tracking_number",
+            "shipment_status",
+        ],
+    }
+
+    for topic, columns in table_columns.items():
+
+        topic_df = (
+            batch_df
+            .filter(col("topic") == topic)
+            .dropDuplicates(["event_id"])
+            .select(*columns)
+        )
+
+        if topic_df.isEmpty():
+            continue
+
+        (
+            topic_df.write
+            .format("jdbc")
+            .option("url", POSTGRES_URL)
+            .option("dbtable", topic)
+            .option("user", POSTGRES_USER)
+            .option("password", POSTGRES_PASSWORD)
+            .option("driver", "org.postgresql.Driver")
+            .mode("append")
+            .save()
+        )
 
     print(f"Processed batch: {batch_id}")
 
